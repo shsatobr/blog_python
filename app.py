@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template
+from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 
 # Conexão com o banco de dados
@@ -17,6 +17,7 @@ def get_post(post_id):
     return post
 
 app = Flask(__name__)
+app.config['SECRET KEY'] = 'y7rduqpXL8fVKln'
 
 @app.route('/')
 def index():
@@ -25,8 +26,26 @@ def index():
     conn.close()                            # Fecha a conexão 
     return render_template('index.html', posts=posts)
 
+# Função para mostrar as páginas
 @app.route('/<int:post_id>')
 def post(post_id):
     post = get_post(post_id)
     return render_template('post.html', post=post)
+
+# Função para inclusão de dados
+@app.route('/create', methods=('GET','POST'))
+def create():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+
+        if not title:
+            flash('Titulo e requerido')
+        else:
+            conn = get_db_connection()
+            conn.execute('INSERT INTO posts (title, content) values (?, ?)', (title, content))
+            conn.commit()
+            conn.close()
+            return redirect(url_for('index'))
+    return render_template('create.html')
 
