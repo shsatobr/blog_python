@@ -17,7 +17,7 @@ def get_post(post_id):
     return post
 
 app = Flask(__name__)
-app.config['SECRET KEY'] = 'y7rduqpXL8fVKln'
+app.config['SECRET_KEY'] = 'y7rduqpXL8fVKln'
 
 @app.route('/')
 def index():
@@ -67,4 +67,16 @@ def edit(id):
             conn.close()
             return redirect(url_for('index'))
     return render_template('edit.html', post=post)
+
+# Função para exclusão de dados
+@app.route('/<int:id>/delete', methods=('POST',))
+def delete(id):
+    post = get_post(id)
+    conn = get_db_connection()
+    conn.execute('DELETE FROM posts WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    flash('"{}" foi excuido com sucesso!'.format(post['title']))
+    return redirect(url_for('index'))
+
 
